@@ -12,17 +12,17 @@ library(ggplot2)
 
 
 ## Search for sites
-all_pollen <- get_sites(datasettype = "pollen", all_data = TRUE) # heavy on the server!
+#all_pollen <- get_sites(datasettype = "pollen", all_data = TRUE) # heavy on the server!
 
 # global count
-all_meta <- as.data.frame(all_pollen)
-head(all_meta)
+#all_meta <- as.data.frame(all_pollen)
+#head(all_meta)
 # download for later use
-write.csv(all_meta, "all_pollen_sites_global.csv", row.names = FALSE)
-saveRDS(all_meta, "all_pollen_sites_global.rds")
+#write.csv(all_meta, "all_pollen_sites_global.csv", row.names = FALSE)
+#saveRDS(all_meta, "all_pollen_sites_global.rds")
 
 # reload later 
-# all_meta <- readRDS("all_pollen_sites_global.rds")
+all_meta <- readRDS("all_pollen_sites_global.rds")
 
 
 # Filter to mountain sites (> 100 m)
@@ -42,6 +42,10 @@ sites_sf <- st_as_sf(all_meta,
 
 gmba <- st_read("shapefiles/GMBA_Inventory_v2.0_standard_300.shp") %>%
   st_transform(4326)
+
+
+# some polygons in the GMBA shapefile are self-intersecting or otherwise invalid
+sf_use_s2(FALSE) # disable s2
 
 
 ## intersect pollen records coordinates with GMBA polygons
@@ -67,8 +71,8 @@ plot(st_geometry(gmba), col = "lightgrey", border = "white")
 plot(st_geometry(sites_in_gmba), col = "red", pch = 20, cex = 0.6, add = TRUE)
 
 ggplot() +
-  geom_sf(data = gmba, fill = "grey90", color = "white") +
-  geom_sf(data = sites_in_gmba, color = "red", size = 0.8, alpha = 0.7) +
+  geom_sf(data = gmba, fill = "grey95", color = "grey80") +
+  geom_sf(data = sites_in_gmba, color = "black", size = 0.8, alpha = 0.7) +
   theme_minimal()
 
 
@@ -84,7 +88,7 @@ ggplot() +
   geom_sf(data = gmba, fill = "grey95", color = "grey80") +
   geom_sf(data = sites_in_gmba, aes(color = Level_03), size = 1, alpha = 0.8) +
   theme_minimal() +
-  theme(legend.position = "bottom") +
+  theme(legend.position = "right") +
   guides(color = guide_legend(ncol = 2, override.aes = list(size = 3))) +
   labs(color = "GMBA Level 03",
        title = "Fossil Pollen Records by GMBA Level 03")
@@ -96,6 +100,27 @@ ggplot() +
   geom_sf(data = sites_in_gmba, aes(color = Level_03), size = 1, alpha = 0.8, show.legend = FALSE) +
   theme_minimal() +
   labs(title = "Fossil Pollen Records by GMBA Level 03")
+
+# level 02 of GMBA with legend
+ggplot() +
+  geom_sf(data = gmba, fill = "grey95", color = "grey80") +
+  geom_sf(data = sites_in_gmba, aes(color = Level_02), size = 1, alpha = 0.8) +
+  theme_minimal() +
+  theme(legend.position = "right") +
+  guides(color = guide_legend(ncol = 2, override.aes = list(size = 3))) +
+  labs(color = "GMBA Level 02",
+       title = "Fossil Pollen Records by GMBA Level 03")
+
+
+# level 02 of GMBA without legend
+ggplot() +
+  geom_sf(data = gmba, fill = "grey95", color = "grey80") +
+  geom_sf(data = sites_in_gmba, aes(color = Level_02), size = 1, alpha = 0.8, show.legend = FALSE) +
+  theme_minimal() +
+  labs(title = "Fossil Pollen Records by GMBA Level 03")
+
+
+
 
 
 # facet by continent level 01
